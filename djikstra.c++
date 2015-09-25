@@ -8,46 +8,52 @@
 
 using namespace std;
 
-typedef map<int, map<int,int> > Graph;
+typedef map<int, map<int, int> > Graph;
 
 class Comparator
 {
 public:
-    int operator() ( const pair<int,int>& p1, const pair<int,int> &p2)
+    int operator() ( const pair<int, int>& p1, const pair<int, int> &p2)
     {
-     return p1.second > p2.second;
+        return p1.second > p2.second;
     }
 };
 
-bool dijkstra(Graph  &G, int source, int destination, vector<int> &path) {
+bool dijkstra(Graph &G, int source, int destination, vector<int> &path) {
     vector<int> d(destination+1);
     vector<int> parent(destination+1);
     bitset<100000> bits;
 
     for(int i = 0 ;i < (destination+1); i++){
-        d[i] = std::numeric_limits<int>::max();
-        parent[i] = -1;
+        d[i] = numeric_limits<int>::max();
     }
 
-    priority_queue<pair<int,int>, vector<pair<int,int> >, Comparator> Q;
+    priority_queue<pair<int, int>, vector<pair<int, int> >, Comparator> Q;
 
     d[source] = 0;
     Q.push(make_pair(source,d[source]));
 
-    bool found = false;
     while(!Q.empty()){
         int u = Q.top().first;
         if(u==destination) {
-            found = true;
-            break;
+            path.clear();
+            int p = destination;
+            path.push_back(destination);
+            
+            while(p!=source){
+                p = parent[p];
+                path.push_back(p);
+            }
+            return true;
         }
+
         bits.set(u);    
         Q.pop();
 
-        for(auto it = G[u].begin(); it != G[u].end(); it ++) {
-            int v = it->first;
+        for(auto &it: G[u]) {
+            int v = it.first;
             if (!bits[v]) {
-                int w = it->second;
+                int w = it.second;
                 if(d[v] > d[u]+w) {
                    d[v] = d[u]+w;
                    parent[v] = u;
@@ -57,18 +63,7 @@ bool dijkstra(Graph  &G, int source, int destination, vector<int> &path) {
         }
     }
 
-    if (found) {
-        path.clear();
-        int p = destination;
-        path.push_back(destination);
-        
-        while(p!=source){
-            p = parent[p];
-            path.push_back(p);
-        }
-    }
-
-    return found;
+    return false;
 }
 
 int main()
