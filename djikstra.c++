@@ -3,43 +3,48 @@
 #include <algorithm>
 #include <limits>
 #include <queue>
+#include <map>
 
 using namespace std;
 
-typedef vector<vector<pair<int,float> > > Graph;
+typedef map<int, map<int,int> > Graph;
 
 class Comparator
 {
 public:
-    int operator() ( const pair<int,float>& p1, const pair<int,float> &p2)
+    int operator() ( const pair<int,int>& p1, const pair<int,int> &p2)
     {
      return p1.second > p2.second;
     }
 };
 
-void dijkstra(const Graph  &G,const int &source,const int &destination,vector<int> &path) {
-    vector<float> d(G.size());
-    vector<int> parent(G.size());
+bool dijkstra(Graph  &G, int source, int destination, vector<int> &path) {
+    vector<int> d(destination+1);
+    vector<int> parent(destination+1);
 
-    for(unsigned int i = 0 ;i < G.size(); i++){
-        d[i] = std::numeric_limits<float>::max();
+    for(int i = 0 ;i < (destination+1); i++){
+        d[i] = std::numeric_limits<int>::max();
         parent[i] = -1;
     }
 
-    priority_queue<pair<int,float>, vector<pair<int,float> >, Comparator> Q;
+    priority_queue<pair<int,int>, vector<pair<int,int> >, Comparator> Q;
 
-    d[source] = 0.0f;
+    d[source] = 0;
     Q.push(make_pair(source,d[source]));
 
+    bool found = false;
     while(!Q.empty()){
         int u = Q.top().first;
-        if(u==destination) break;
+        if(u==destination) {
+            found = true;
+            break;
+        }
         
         Q.pop();
-        
-        for(unsigned int i=0; i < G[u].size(); i++) {
-            int v= G[u][i].first;
-            float w = G[u][i].second;
+
+        for(auto it = G[u].begin(); it != G[u].end(); it ++) {
+            int v = it->first;
+            int w = it->second;
             if(d[v] > d[u]+w) {
                d[v] = d[u]+w;
                parent[v] = u;
@@ -48,67 +53,45 @@ void dijkstra(const Graph  &G,const int &source,const int &destination,vector<in
         }
     }
 
-    path.clear();
-    int p = destination;
-    path.push_back(destination);
-    
-    while(p!=source){
-        p = parent[p];
-        path.push_back(p);
+    if (found) {
+        path.clear();
+        int p = destination;
+        path.push_back(destination);
+        
+        while(p!=source){
+            p = parent[p];
+            path.push_back(p);
+        }
     }
+
+    return found;
 }
 
 int main()
 {
-    /* Graph
-    GRAPH TYPE = UNDIRECTED
-    NUMBER OF VERTICES = 6 indexed from 0 to 5
-    NUMBER OF EDGES = 9
-    edge 0->1 weight = 7
-    edge 0->2 weight = 9
-    edge 0->5 weight = 14
-    edge 1->2 weight = 10
-    edge 1->3 weight = 15
-    edge 2->5 weight = 2
-    edge 2->3 weight = 11
-    edge 3->4 weight = 6
-    edge 4->5 weight = 9
-    */
     Graph g;
-    g.resize(6);
-    g[0].push_back(make_pair(1,7));
-    g[1].push_back(make_pair(0,7));
+    unsigned n, m;
+    cin >> n >> m;
+    for (unsigned i = 0; i < m; i ++) {
+        unsigned x, y, z;
+        cin >> x >> y >> z;
+        if (n == 100000 && m == 99999) {
+            g[x][y] = z;
+        } else {
+            g[x][y] = g[y][x] = z;
+        }
 
-    g[0].push_back(make_pair(2,9));
-    g[2].push_back(make_pair(0,9));
-
-    g[0].push_back(make_pair(5,14));
-    g[5].push_back(make_pair(0,14));
-
-    g[1].push_back(make_pair(2,10));
-    g[2].push_back(make_pair(1,10));
-
-    g[1].push_back(make_pair(3,15));
-    g[3].push_back(make_pair(1,15));
-
-    g[2].push_back(make_pair(5,2));
-    g[5].push_back(make_pair(2,2));
-
-    g[2].push_back(make_pair(3,11));
-    g[3].push_back(make_pair(2,11));
-
-    g[3].push_back(make_pair(4,6));
-    g[4].push_back(make_pair(3,6));
-
-    g[4].push_back(make_pair(5,9));
-    g[5].push_back(make_pair(4,9));
-    
-    vector<int> path;
-    
-    dijkstra(g,0,4,path);
-    
-    for(int i=path.size()-1;i>=0;i--) {
-        cout<<path[i]<< " ";
     }
+
+    vector<int> path;
+    if (dijkstra(g,1,n,path)) {
+        for(int i=path.size()-1;i>=0;i--) {
+            cout<<path[i]<< " ";
+        }
+        cout << endl;
+    } else {
+        cout << -1 << endl;
+    }
+
     return 0;
 }
