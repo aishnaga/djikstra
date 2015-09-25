@@ -4,6 +4,7 @@
 #include <limits>
 #include <queue>
 #include <map>
+#include <bitset>
 
 using namespace std;
 
@@ -21,6 +22,7 @@ public:
 bool dijkstra(Graph  &G, int source, int destination, vector<int> &path) {
     vector<int> d(destination+1);
     vector<int> parent(destination+1);
+    bitset<100000> bits;
 
     for(int i = 0 ;i < (destination+1); i++){
         d[i] = std::numeric_limits<int>::max();
@@ -39,16 +41,18 @@ bool dijkstra(Graph  &G, int source, int destination, vector<int> &path) {
             found = true;
             break;
         }
-        
+        bits.set(u);    
         Q.pop();
 
         for(auto it = G[u].begin(); it != G[u].end(); it ++) {
             int v = it->first;
-            int w = it->second;
-            if(d[v] > d[u]+w) {
-               d[v] = d[u]+w;
-               parent[v] = u;
-               Q.push(make_pair(v,d[v]));
+            if (!bits[v]) {
+                int w = it->second;
+                if(d[v] > d[u]+w) {
+                   d[v] = d[u]+w;
+                   parent[v] = u;
+                   Q.push(make_pair(v,d[v]));
+                }
             }
         }
     }
@@ -75,12 +79,7 @@ int main()
     for (unsigned i = 0; i < m; i ++) {
         unsigned x, y, z;
         cin >> x >> y >> z;
-        if (n == 100000 && m == 99999) {
-            g[x][y] = z;
-        } else {
-            g[x][y] = g[y][x] = z;
-        }
-
+        g[x][y] = g[y][x] = z;
     }
 
     vector<int> path;
